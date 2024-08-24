@@ -1,7 +1,6 @@
 package dao.impl;
 
 import dao.intf.ScheduleDAO;
-import models.Schedule;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,18 +9,21 @@ import java.util.List;
 public class ScheduleDAOImpl implements ScheduleDAO {
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital", "username", "password");
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver not found");
+        }
+        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital?useSSL=false", "root", "Urmila@24");
     }
 
     @Override
-    public void addSchedule(Schedule schedule) {
-        String sql = "INSERT INTO schedules (doctor_id, date, start_time, end_time) VALUES (?, ?, ?, ?)";
+    public void addSchedule(int doctorId, String schedule) {
+        String sql = "INSERT INTO schedules (doctor_id, schedule) VALUES (?, ?)";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, schedule.getDoctor().getId());
-            statement.setDate(2, Date.valueOf(schedule.getDate()));
-            statement.setTime(3, Time.valueOf(schedule.getStartTime()));
-            statement.setTime(4, Time.valueOf(schedule.getEndTime()));
+            statement.setInt(1, doctorId);
+            statement.setString(2, schedule);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -29,15 +31,12 @@ public class ScheduleDAOImpl implements ScheduleDAO {
     }
 
     @Override
-    public void updateSchedule(Schedule schedule) {
-        String sql = "UPDATE schedules SET doctor_id = ?, date = ?, start_time = ?, end_time = ? WHERE id = ?";
+    public void updateSchedule(int doctorId, String newSchedule) {
+        String sql = "UPDATE schedules SET schedule = ? WHERE doctor_id = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, schedule.getDoctor().getId());
-            statement.setDate(2, Date.valueOf(schedule.getDate()));
-            statement.setTime(3, Time.valueOf(schedule.getStartTime()));
-            statement.setTime(4, Time.valueOf(schedule.getEndTime()));
-            statement.setInt(5, schedule.getId());
+            statement.setString(1, newSchedule);
+            statement.setInt(2, doctorId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -45,11 +44,11 @@ public class ScheduleDAOImpl implements ScheduleDAO {
     }
 
     @Override
-    public void deleteSchedule(int id) {
-        String sql = "DELETE FROM schedules WHERE id = ?";
+    public void removeSchedule(int doctorId) {
+        String sql = "DELETE FROM schedules WHERE doctor_id = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
+            statement.setInt(1, doctorId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,43 +56,15 @@ public class ScheduleDAOImpl implements ScheduleDAO {
     }
 
     @Override
-    public Schedule getScheduleById(int id) {
-        String sql = "SELECT * FROM schedules WHERE id = ?";
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return new Schedule(
-                    resultSet.getInt("id"),
-                    new DoctorDAOImpl().getDoctorById(resultSet.getInt("doctor_id")),
-                    resultSet.getDate("date").toLocalDate(),
-                    resultSet.getTime("start_time").toLocalTime(),
-                    resultSet.getTime("end_time").toLocalTime()
-                );
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public List<Schedule> getSchedulesByDoctor(int doctorId) {
-        String sql = "SELECT * FROM schedules WHERE doctor_id = ?";
-        List<Schedule> schedules = new ArrayList<>();
+    public List<String> getSchedules(int doctorId) {
+        String sql = "SELECT schedule FROM schedules WHERE doctor_id = ?";
+        List<String> schedules = new ArrayList<>();
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, doctorId);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                schedules.add(new Schedule(
-                    resultSet.getInt("id"),
-                    new DoctorDAOImpl().getDoctorById(resultSet.getInt("doctor_id")),
-                    resultSet.getDate("date").toLocalDate(),
-                    resultSet.getTime("start_time").toLocalTime(),
-                    resultSet.getTime("end_time").toLocalTime()
-                ));
+                schedules.add(resultSet.getString("schedule"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

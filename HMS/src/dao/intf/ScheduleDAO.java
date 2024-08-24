@@ -1,13 +1,10 @@
 package dao.intf;
 
-import models.Schedule;
-
 import java.util.List;
 
 public interface ScheduleDAO {
-    void addSchedule(Schedule schedule);
-    void updateSchedule(Schedule schedule);
-    void deleteSchedule(int id);
-    Schedule getScheduleById(int id);
-    List<Schedule> getSchedulesByDoctor(int doctorId);
+    void addSchedule(int doctorId, String schedule);
+    void updateSchedule(int doctorId, String newSchedule);
+    void removeSchedule(int doctorId);
+    List<String> getSchedules(int doctorId);
 }

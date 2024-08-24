@@ -16,6 +16,9 @@ public class Report {
         this.patientReports = patientReports;
     }
 
+    public Report(String appointmentReport, String s) {
+    }
+
     public int getId() {
         return id;
     }

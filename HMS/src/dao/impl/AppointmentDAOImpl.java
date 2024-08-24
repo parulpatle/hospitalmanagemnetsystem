@@ -10,7 +10,12 @@ import java.util.List;
 public class AppointmentDAOImpl implements AppointmentDAO {
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital", "username", "password");
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver not found");
+        }
+        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital?useSSL=false", "root", "Urmila@24");
     }
 
     @Override

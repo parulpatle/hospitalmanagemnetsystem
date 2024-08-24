@@ -10,8 +10,13 @@ import java.util.List;
 public class UserDAOImpl implements UserDAO {
 
     private Connection getConnection() throws SQLException {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver not found");
+        }
         // Replace with your actual database connection logic
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital", "username", "password");
+        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital?useSSL=false", "root", "Urmila@24");
     }
 
     @Override

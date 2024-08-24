@@ -10,7 +10,12 @@ import java.util.List;
 public class MedicineDAOImpl implements MedicineDAO {
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital", "username", "password");
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver not found");
+        }
+        return DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital?useSSL=false", "root", "Urmila@24");
     }
 
     @Override
@@ -20,7 +25,6 @@ public class MedicineDAOImpl implements MedicineDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, medicine.getName());
             statement.setString(2, medicine.getDescription());
-            statement.setString(3, medicine.getDosage());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -34,7 +38,6 @@ public class MedicineDAOImpl implements MedicineDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, medicine.getName());
             statement.setString(2, medicine.getDescription());
-            statement.setString(3, medicine.getDosage());
             statement.setInt(4, medicine.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -65,8 +68,8 @@ public class MedicineDAOImpl implements MedicineDAO {
                 return new Medicine(
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
-                    resultSet.getString("description"),
-                    resultSet.getString("dosage")
+                    resultSet.getString("description")
+
                 );
             }
         } catch (SQLException e) {
@@ -86,8 +89,8 @@ public class MedicineDAOImpl implements MedicineDAO {
                 medicines.add(new Medicine(
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
-                    resultSet.getString("description"),
-                    resultSet.getString("dosage")
+                    resultSet.getString("description")
+
                 ));
             }
         } catch (SQLException e) {
